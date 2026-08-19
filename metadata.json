@@ -1,0 +1,6 @@
+{
+  "name": "Viral Affiliate & Carousel Content Creator",
+  "description": "Chuyên gia sáng tạo kịch bản Carousel và Caption Affiliate Gen Z chuẩn phong cách Nghề Content với lệnh /1, /2, /3 và Google Search Grounding.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
