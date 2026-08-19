@@ -1,6 +1,6 @@
 export type CommandType = "/1" | "/2" | "/3" | "auto";
 
-export type VerdictType = "CHÂN ÁI" | "BÌNH THƯỜNG" | "CÂN NHẮC" | "CHỐT HẠ" | "NÊN THỬ" | "NÉ GẤP";
+export type VerdictType = "CHÂN ÁI" | "BÌNH THƯỜNG" | "CÂN NHẮC" | "CHỐT HẠ" | "NÊN THỬ" | "NÉ GẤP" | "TRẢI NGHIỆM" | string;
 
 export interface SlideDesignGuide {
   background: string; // e.g. "#FFFFFF (Trắng sáng)", "#F8F9FA (Xám sáng studio)", "#FDFBF7 (Be kem nhạt)"
