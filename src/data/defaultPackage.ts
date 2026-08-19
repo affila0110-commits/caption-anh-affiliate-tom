@@ -141,25 +141,37 @@ export const DEFAULT_SAMPLE_PACKAGE: GeneratedAffiliatePackage = {
       {
         name: "Olay B3+ Retinol Cellscience (Chân ái nâng tông)",
         verdict: "Chân ái nâng tông siêu đỉnh",
-        defaultUrl: "https://s.shopee.vn/olay_b3_retinol_aff",
+        defaultUrl: "https://shopee.vn/search?keyword=Olay+B3+Retinol+Cellscience+chính+hãng&facet=11035987",
+        shopeeSearchUrl: "https://shopee.vn/search?keyword=Olay+B3+Retinol+Cellscience+chính+hãng",
+        mallSearchUrl: "https://shopee.vn/search?keyword=Olay+B3+Retinol+Cellscience&facet=11035987",
+        topSalesSearchUrl: "https://shopee.vn/search?keyword=Olay+B3+Retinol+Cellscience&sortBy=sales",
         note: "Trắng nhanh, da ngăm lì nên mua",
       },
       {
         name: "Vaseline Gluta-Hya Flawless Glow (Tuýp Vàng)",
         verdict: "Serum mát rượi hè",
-        defaultUrl: "https://s.shopee.vn/vaseline_gluta_aff",
+        defaultUrl: "https://shopee.vn/search?keyword=Vaseline+Gluta+Hya+Flawless+Glow+chính+hãng&facet=11035987",
+        shopeeSearchUrl: "https://shopee.vn/search?keyword=Vaseline+Gluta+Hya+Flawless+Glow+chính+hãng",
+        mallSearchUrl: "https://shopee.vn/search?keyword=Vaseline+Gluta+Hya+Flawless+Glow&facet=11035987",
+        topSalesSearchUrl: "https://shopee.vn/search?keyword=Vaseline+Gluta+Hya+Flawless+Glow&sortBy=sales",
         note: "Thấm nhanh, hợp học sinh",
       },
       {
         name: "Nivea Night Nourish C&E (Cứu cánh cháy nắng)",
         verdict: "Ngon bổ rẻ",
-        defaultUrl: "https://s.shopee.vn/nivea_ce_aff",
+        defaultUrl: "https://shopee.vn/search?keyword=Nivea+Extra+White+Night+Nourish+C+E+chính+hãng&facet=11035987",
+        shopeeSearchUrl: "https://shopee.vn/search?keyword=Nivea+Extra+White+Night+Nourish+C+E+chính+hãng",
+        mallSearchUrl: "https://shopee.vn/search?keyword=Nivea+Extra+White+Night+Nourish+C+E&facet=11035987",
+        topSalesSearchUrl: "https://shopee.vn/search?keyword=Nivea+Extra+White+Night+Nourish+C+E&sortBy=sales",
         note: "Mờ sạm nắng sau 2 tuần",
       },
       {
         name: "Hatomugi Ý Dĩ Dưỡng Ẩm SPF31",
         verdict: "Cân nhắc nếu muốn trắng",
-        defaultUrl: "https://s.shopee.vn/hatomugi_aff",
+        defaultUrl: "https://shopee.vn/search?keyword=Hatomugi+Ý+Dĩ+Dưỡng+Ẩm+SPF31+chính+hãng&facet=11035987",
+        shopeeSearchUrl: "https://shopee.vn/search?keyword=Hatomugi+Ý+Dĩ+Dưỡng+Ẩm+SPF31+chính+hãng",
+        mallSearchUrl: "https://shopee.vn/search?keyword=Hatomugi+Ý+Dĩ+Dưỡng+Ẩm+SPF31&facet=11035987",
+        topSalesSearchUrl: "https://shopee.vn/search?keyword=Hatomugi+Ý+Dĩ+Dưỡng+Ẩm+SPF31&sortBy=sales",
         note: "Chỉ cấp ẩm văn phòng",
       },
     ],
@@ -178,10 +190,10 @@ export const DEFAULT_SAMPLE_PACKAGE: GeneratedAffiliatePackage = {
 
 Huhu mùa này mà không chịu dưỡng thể là da khô mốc với sạm đi trông thấy luôn á mn ơi 😭. Tui đã tự tay test qua cả chục chai lotion từ bình dân đến tiền triệu trên Shopee, nay gom lại 4-5 dòng hot nhất để khen thật chê thẳng cho mấy bà đỡ tốn tiền oan nha!
 
-🌱 Olay B3+ Retinol Cellscience (Chân ái nâng tông): https://s.shopee.vn/olay_b3_retinol_aff
-🌱 Vaseline Gluta-Hya Flawless Glow (Serum vàng): https://s.shopee.vn/vaseline_gluta_aff
-🌱 Nivea Night Nourish C&E (Cứu cánh cháy nắng): https://s.shopee.vn/nivea_ce_aff
-🌱 Hatomugi Ý Dĩ Dưỡng Ẩm SPF31: https://s.shopee.vn/hatomugi_aff
+🌱 Olay B3+ Retinol Cellscience (Chân ái nâng tông): https://shopee.vn/search?keyword=Olay+B3+Retinol+Cellscience+chính+hãng&facet=11035987
+🌱 Vaseline Gluta-Hya Flawless Glow (Serum vàng): https://shopee.vn/search?keyword=Vaseline+Gluta+Hya+Flawless+Glow+chính+hãng&facet=11035987
+🌱 Nivea Night Nourish C&E (Cứu cánh cháy nắng): https://shopee.vn/search?keyword=Nivea+Extra+White+Night+Nourish+C+E+chính+hãng&facet=11035987
+🌱 Hatomugi Ý Dĩ Dưỡng Ẩm SPF31: https://shopee.vn/search?keyword=Hatomugi+Ý+Dĩ+Dưỡng+Ẩm+SPF31+chính+hãng&facet=11035987
 
 Mấy bà đã xài qua em nào trong list này chưa? Thả cmt tui tư vấn kỹ theo từng loại da nha! Đừng quên tim & lưu bài lại kẻo cần nhé! ✨
 

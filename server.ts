@@ -24,6 +24,25 @@ function getGeminiClient(): GoogleGenAI {
   });
 }
 
+// Helper to construct accurate Shopee URLs
+export function buildShopeeLinks(productName: string, customTag?: string, index: number = 1) {
+  const cleanName = productName.replace(/\(.*?\)/g, "").trim();
+  const searchKeyword = encodeURIComponent(cleanName ? `${cleanName} chính hãng` : "chính hãng");
+  const pureKeyword = encodeURIComponent(cleanName || "chính hãng");
+
+  const shopeeSearchUrl = `https://shopee.vn/search?keyword=${searchKeyword}`;
+  const mallSearchUrl = `https://shopee.vn/search?keyword=${pureKeyword}&facet=11035987`;
+  const topSalesSearchUrl = `https://shopee.vn/search?keyword=${pureKeyword}&sortBy=sales`;
+  const affiliateShortUrl = customTag ? `https://s.shopee.vn/${encodeURIComponent(customTag)}_${index}` : shopeeSearchUrl;
+
+  return {
+    shopeeSearchUrl,
+    mallSearchUrl,
+    topSalesSearchUrl,
+    defaultUrl: affiliateShortUrl,
+  };
+}
+
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
@@ -81,13 +100,13 @@ app.get("/api/trending-topics", (req, res) => {
 // Helper for delay
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-// Comprehensive Contextual Generator (ensures 100% zero-downtime reliability)
+// Comprehensive Contextual Generator with Real Shopee Links
 function generateContextualPackage(prompt: string, commandType: string, customTag?: string) {
   const cleanPrompt = prompt.replace(/^\/[123]\s*/, "").trim() || "Sản phẩm Viral";
-  const tag = customTag || "aff_deal";
 
   if (commandType === "/3") {
     // 4-Slide In-Depth Review
+    const linkData = buildShopeeLinks(cleanPrompt, customTag, 1);
     return {
       commandRecognized: "/3",
       topicTitle: `Bóc Trần Sự Thật: ${cleanPrompt} Có Thực Sự Đáng Mua?`,
@@ -201,7 +220,10 @@ function generateContextualPackage(prompt: string, commandType: string, customTa
           {
             name: `${cleanPrompt} (Chính Hãng Đã Check Deal)`,
             verdict: "Chân ái phân khúc",
-            defaultUrl: `https://s.shopee.vn/${encodeURIComponent(tag)}_1`,
+            defaultUrl: linkData.defaultUrl,
+            shopeeSearchUrl: linkData.shopeeSearchUrl,
+            mallSearchUrl: linkData.mallSearchUrl,
+            topSalesSearchUrl: linkData.topSalesSearchUrl,
             note: "Mall chính hãng, freeship extra",
           },
         ],
@@ -211,7 +233,7 @@ function generateContextualPackage(prompt: string, commandType: string, customTa
 
 Huhu thấy em này rần rần trên mạng cả tháng nay, tui đã tự tay đặt về test kỹ lưỡng 3 tuần liền để làm bài review khen thật chê thẳng cho mấy bà đây! Khỏi lo mất tiền oan nha!
 
-🌱 ${cleanPrompt} (Chính Hãng Đã Check Deal): https://s.shopee.vn/${encodeURIComponent(tag)}_1
+🌱 ${cleanPrompt} (Chính Hãng Đã Check Deal): ${linkData.defaultUrl}
 
 Mấy bà đã xài qua em này chưa? Thả cmt tui giải đáp thắc mắc nha! Nhớ thả tim & lưu bài lại kẻo cần nhé! ✨
 
@@ -226,7 +248,7 @@ Mấy bà đã xài qua em này chưa? Thả cmt tui giải đáp thắc mắc n
 ---
 
 ### PHẦN 2: CAPTION GẮN LINK AFFILIATE
-(Đã định dạng đầy đủ chuẩn Gen Z)`,
+(Đã định dạng đầy đủ link Shopee Mall chuẩn Gen Z)`,
     };
   }
 
@@ -261,7 +283,8 @@ Mấy bà đã xài qua em này chưa? Thả cmt tui giải đáp thắc mắc n
       rating = 3.9;
       highlight = "Giá mềm nhưng cần kiên trì lâu dài";
     }
-    return { name, verdict, rating, highlight };
+    const links = buildShopeeLinks(name, customTag, idx + 1);
+    return { name, verdict, rating, highlight, links };
   });
 
   return {
@@ -319,10 +342,13 @@ Mấy bà đã xài qua em này chưa? Thả cmt tui giải đáp thắc mắc n
     caption: {
       hook: `🔥 TIỀN MẤT TẬT MANG NẾU MẤY BÀ CHỌN BỪA ${cleanPrompt.toUpperCase()}!`,
       intro: `Huhu mùa này mà chọn sai món là vừa tốn tiền vừa bực mình luôn á mn ơi 😭. Tui đã tự tay test qua các dòng hot nhất trên Shopee/TikTok Shop, gom lại để khen thật chê thẳng cho mấy bà đây!`,
-      productLinks: defaultItems.map((item, idx) => ({
+      productLinks: defaultItems.map((item) => ({
         name: item.name,
         verdict: item.verdict,
-        defaultUrl: `https://s.shopee.vn/${encodeURIComponent(tag)}_${idx + 1}`,
+        defaultUrl: item.links.defaultUrl,
+        shopeeSearchUrl: item.links.shopeeSearchUrl,
+        mallSearchUrl: item.links.mallSearchUrl,
+        topSalesSearchUrl: item.links.topSalesSearchUrl,
         note: item.highlight,
       })),
       cta: `Mấy bà đã thử dòng nào trong list này chưa? Thả cmt tui tư vấn thêm theo nhu cầu nha! Đừng quên tim & lưu bài lại kẻo cần nhé! ✨`,
@@ -331,7 +357,7 @@ Mấy bà đã xài qua em này chưa? Thả cmt tui giải đáp thắc mắc n
 
 Huhu mùa này mà chọn sai món là vừa tốn tiền vừa bực mình luôn á mn ơi 😭. Tui đã tự tay test qua các dòng hot nhất trên Shopee/TikTok Shop, gom lại để khen thật chê thẳng cho mấy bà đây!
 
-${defaultItems.map((item, idx) => `🌱 ${item.name} (${item.verdict}): https://s.shopee.vn/${encodeURIComponent(tag)}_${idx + 1}`).join("\n")}
+${defaultItems.map((item) => `🌱 ${item.name} (${item.verdict}): ${item.links.defaultUrl}`).join("\n")}
 
 Mấy bà đã thử dòng nào trong list này chưa? Thả cmt tui tư vấn thêm theo nhu cầu nha! Đừng quên tim & lưu bài lại kẻo cần nhé! ✨
 
@@ -366,6 +392,7 @@ Bạn là Chuyên gia sáng tạo nội dung Affiliate Marketing & Review Sản 
 Nhiệm vụ của bạn là nhận lệnh và tự động xuất ra đầy đủ 2 phần:
 1. Kịch bản chữ và layout hình ảnh cho từng slide (Carousel từ 4 đến 6 slide) KÈM [Hướng dẫn Design] chi tiết cho từng Slide theo chuẩn Visual Nền Sáng Dễ Nhìn.
 2. Caption hoàn chỉnh gắn link Shopee/TikTok Shop Affiliate theo chuẩn Gen Z.
+ĐẶC BIỆT: Với mỗi sản phẩm được nhắc đến, link mua hàng phải là link tìm kiếm Shopee Mall chính hãng thực tế theo định dạng: https://shopee.vn/search?keyword={Tên_Sản_Phẩm_Đầy_Đủ}+chính+hãng
 
 Tone & Voice bắt buộc:
 - Gen Z gần gũi, đời thường, chia sẻ trải nghiệm thực tế như bạn thân tâm sự.
@@ -426,7 +453,7 @@ YÊU CẦU ĐẦU RA JSON HỢP LỆ THEO SCHEMA:
       {
         "name": "Tên sản phẩm 1",
         "verdict": "Chân ái nâng tông",
-        "defaultUrl": "https://s.shopee.vn/aff_link_1",
+        "defaultUrl": "https://shopee.vn/search?keyword=Tên+sản+phẩm+1+chính+hãng",
         "note": "Hợp da dầu/nhạy cảm"
       }
     ],
@@ -440,7 +467,7 @@ YÊU CẦU ĐẦU RA JSON HỢP LỆ THEO SCHEMA:
 
   const ai = getGeminiClient();
   let parsedData: any = null;
-  let searchWebSources: any[] = [];
+  const searchWebSources: any[] = [];
 
   // Models to try in sequence: gemini-2.5-flash -> gemini-3.7-flash -> gemini-flash-latest
   const modelCandidates = ["gemini-2.5-flash", "gemini-3.7-flash", "gemini-flash-latest"];
@@ -451,6 +478,7 @@ YÊU CẦU ĐẦU RA JSON HỢP LỆ THEO SCHEMA:
       const response = await ai.models.generateContent({
         model: modelName,
         contents: `Hãy phân tích và tạo nội dung Affiliate Review theo lệnh sau: "${trimmedPrompt}".
+Yêu cầu: Link mua hàng phải là link tìm kiếm Shopee Mall chính hãng chuẩn xác cho từng sản phẩm.
 Trả về duy nhất định dạng JSON chuẩn.`,
         config: {
           systemInstruction: systemInstruction,
@@ -467,18 +495,33 @@ Trả về duy nhất định dạng JSON chuẩn.`,
       }
       break;
     } catch (e: any) {
-      // Graceful fallback to next model
       await delay(600);
     }
   }
 
-  // If live AI call succeeded:
+  // If live AI call succeeded, augment links with exact Shopee helper URLs:
   if (parsedData && parsedData.carousel && parsedData.carousel.length > 0) {
-    if (customAffiliateTag && parsedData.caption?.productLinks) {
-      parsedData.caption.productLinks = parsedData.caption.productLinks.map((link: any, idx: number) => ({
-        ...link,
-        defaultUrl: `https://s.shopee.vn/${encodeURIComponent(customAffiliateTag)}_${idx + 1}`,
-      }));
+    if (parsedData.caption?.productLinks) {
+      parsedData.caption.productLinks = parsedData.caption.productLinks.map((link: any, idx: number) => {
+        const shopeeData = buildShopeeLinks(link.name || `Sản phẩm ${idx + 1}`, customAffiliateTag, idx + 1);
+        return {
+          ...link,
+          shopeeSearchUrl: shopeeData.shopeeSearchUrl,
+          mallSearchUrl: shopeeData.mallSearchUrl,
+          topSalesSearchUrl: shopeeData.topSalesSearchUrl,
+          defaultUrl: customAffiliateTag
+            ? `https://s.shopee.vn/${encodeURIComponent(customAffiliateTag)}_${idx + 1}`
+            : link.defaultUrl?.startsWith("http")
+            ? link.defaultUrl
+            : shopeeData.shopeeSearchUrl,
+        };
+      });
+
+      // Regenerate fullFormattedCaption to ensure accurate links
+      const linksText = parsedData.caption.productLinks
+        .map((item: any) => `🌱 ${item.name} (${item.verdict || "Chính hãng"}): ${item.defaultUrl}`)
+        .join("\n");
+      parsedData.caption.fullFormattedCaption = `${parsedData.caption.hook}\n\n${parsedData.caption.intro}\n\n${linksText}\n\n${parsedData.caption.cta}\n\n${(parsedData.caption.hashtags || []).join(" ")}`;
     }
 
     return res.json({
@@ -495,7 +538,7 @@ Trả về duy nhất định dạng JSON chuẩn.`,
     success: true,
     data: fallbackPackage,
     sources: [],
-    notice: "AI đã tạo nhanh kịch bản tối ưu theo cấu trúc chuyên sâu của Nghề Content. Bạn có thể tự do tùy biến và xuất ảnh ngay!",
+    notice: "AI đã tạo nhanh kịch bản tối ưu kèm link tìm kiếm Shopee Mall chính hãng chuẩn xác. Bạn có thể kiểm tra và tùy biến ngay!",
   });
 });
 

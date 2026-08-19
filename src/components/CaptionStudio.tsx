@@ -1,18 +1,22 @@
 import React, { useState } from "react";
-import { 
-  Copy, 
-  Check, 
-  ExternalLink, 
-  Sparkles, 
-  MessageSquare,
-  Edit2,
-  Share2,
-  CheckCircle2,
-  Hash,
-  Link as LinkIcon
-} from "lucide-react";
 import confetti from "canvas-confetti";
-import { GeneratedCaption } from "../types";
+import { GeneratedCaption, AffiliateProductLink } from "../types";
+import { 
+  ExternalLink as ExtIcon, 
+  ShoppingBag as BagIcon,
+  Search as SearchIcon,
+  Flame as FlameIcon,
+  Copy as CopyIcon,
+  Check as CheckIcon,
+  Sparkles as SparkleIcon,
+  MessageSquare as MsgIcon,
+  Edit2 as EditIcon,
+  Share2 as ShareIcon,
+  CheckCircle2 as CheckCircleIcon,
+  Hash as HashIcon,
+  Link as ChainIcon,
+  Globe as GlobeIcon
+} from "lucide-react";
 
 interface CaptionStudioProps {
   caption: GeneratedCaption;
@@ -28,12 +32,13 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
   const [copiedType, setCopiedType] = useState<string | null>(null);
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [activeTab, setActiveTab] = useState<"caption" | "markdown">("caption");
+  const [customTagInput, setCustomTagInput] = useState("");
 
-  const buildCleanCaption = () => {
-    if (caption.fullFormattedCaption) return caption.fullFormattedCaption;
-    const linksBlock = caption.productLinks
-      ?.map((l) => `🌱 ${l.name}: ${l.defaultUrl}`)
-      .join("\n") || "";
+  const buildCleanCaption = (links?: AffiliateProductLink[]) => {
+    const effectiveLinks = links || caption.productLinks || [];
+    const linksBlock = effectiveLinks
+      .map((l) => `🌱 ${l.name} (${l.verdict || "Chính Hãng"}): ${l.defaultUrl}`)
+      .join("\n");
     return `${caption.hook}\n\n${caption.intro}\n\n${linksBlock}\n\n${caption.cta}\n\n${caption.hashtags?.join(" ") || ""}`;
   };
 
@@ -54,17 +59,87 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
       ...updatedLinks[index],
       defaultUrl: newUrl,
     };
-    const linksBlock = updatedLinks
-      .map((l) => `🌱 ${l.name}: ${l.defaultUrl}`)
-      .join("\n");
-
-    const fullCaption = `${caption.hook}\n\n${caption.intro}\n\n${linksBlock}\n\n${caption.cta}\n\n${caption.hashtags.join(" ")}`;
+    const fullCaption = buildCleanCaption(updatedLinks);
 
     onUpdateCaption({
       ...caption,
       productLinks: updatedLinks,
       fullFormattedCaption: fullCaption,
     });
+  };
+
+  const handleApplyAllShopeeMall = () => {
+    const updatedLinks = caption.productLinks.map((link) => {
+      const cleanName = link.name.replace(/\(.*?\)/g, "").trim();
+      const mallUrl = link.mallSearchUrl || `https://shopee.vn/search?keyword=${encodeURIComponent(cleanName + " chính hãng")}&facet=11035987`;
+      return {
+        ...link,
+        defaultUrl: mallUrl,
+      };
+    });
+
+    const fullCaption = buildCleanCaption(updatedLinks);
+    onUpdateCaption({
+      ...caption,
+      productLinks: updatedLinks,
+      fullFormattedCaption: fullCaption,
+    });
+    triggerCopyFeedback("applied-mall", "Đã cập nhật tất cả sang link Shopee Mall!");
+  };
+
+  const handleApplyAllShopeeSearch = () => {
+    const updatedLinks = caption.productLinks.map((link) => {
+      const cleanName = link.name.replace(/\(.*?\)/g, "").trim();
+      const searchUrl = link.shopeeSearchUrl || `https://shopee.vn/search?keyword=${encodeURIComponent(cleanName + " chính hãng")}`;
+      return {
+        ...link,
+        defaultUrl: searchUrl,
+      };
+    });
+
+    const fullCaption = buildCleanCaption(updatedLinks);
+    onUpdateCaption({
+      ...caption,
+      productLinks: updatedLinks,
+      fullFormattedCaption: fullCaption,
+    });
+    triggerCopyFeedback("applied-search", "Đã cập nhật link tìm kiếm Shopee!");
+  };
+
+  const handleApplyAllShopeeTopSales = () => {
+    const updatedLinks = caption.productLinks.map((link) => {
+      const cleanName = link.name.replace(/\(.*?\)/g, "").trim();
+      const salesUrl = link.topSalesSearchUrl || `https://shopee.vn/search?keyword=${encodeURIComponent(cleanName)}&sortBy=sales`;
+      return {
+        ...link,
+        defaultUrl: salesUrl,
+      };
+    });
+
+    const fullCaption = buildCleanCaption(updatedLinks);
+    onUpdateCaption({
+      ...caption,
+      productLinks: updatedLinks,
+      fullFormattedCaption: fullCaption,
+    });
+    triggerCopyFeedback("applied-sales", "Đã cập nhật link Shopee Bán Chạy!");
+  };
+
+  const handleApplyCustomShortlinkTag = () => {
+    if (!customTagInput.trim()) return;
+    const tag = customTagInput.trim();
+    const updatedLinks = caption.productLinks.map((link, idx) => ({
+      ...link,
+      defaultUrl: `https://s.shopee.vn/${encodeURIComponent(tag)}_${idx + 1}`,
+    }));
+
+    const fullCaption = buildCleanCaption(updatedLinks);
+    onUpdateCaption({
+      ...caption,
+      productLinks: updatedLinks,
+      fullFormattedCaption: fullCaption,
+    });
+    triggerCopyFeedback("applied-tag", "Đã áp dụng mã Affiliate s.shopee.vn!");
   };
 
   const handleUpdateFullCaptionText = (text: string) => {
@@ -75,7 +150,7 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
   };
 
   const copyOnlyLinks = () => {
-    const links = caption.productLinks?.map((l) => `🌱 ${l.name}: ${l.defaultUrl}`).join("\n") || "";
+    const links = caption.productLinks?.map((l) => `🌱 ${l.name} (${l.verdict || "Chính hãng"}): ${l.defaultUrl}`).join("\n") || "";
     triggerCopyFeedback("links-only", links);
   };
 
@@ -84,25 +159,25 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
     triggerCopyFeedback("hashtags-only", tags);
   };
 
-  const fullCaptionContent = buildCleanCaption();
+  const fullCaptionContent = caption.fullFormattedCaption || buildCleanCaption();
 
   return (
     <div id="caption-studio-container" className="bg-slate-900/60 rounded-2xl border border-slate-800 shadow-xl shadow-black/40 overflow-hidden mb-8 backdrop-blur-md">
       {/* Top Studio Header Bar */}
       <div className="p-4 border-b border-slate-800 bg-slate-900/90 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400">
-            <MessageSquare className="w-4 h-4" />
+          <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400">
+            <BagIcon className="w-4 h-4" />
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-              <span>PHẦN 2: Caption Gắn Link Affiliate (Chuẩn Gen Z)</span>
-              <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                Sẵn Sàng Dán Social
+              <span>PHẦN 2: Caption & Link Shopee Chính Hãng (Đã Check Deal)</span>
+              <span className="text-[10px] font-mono font-bold text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                <BagIcon className="w-2.5 h-2.5" /> Shopee Mall Verified
               </span>
             </h3>
             <p className="text-xs text-slate-400">
-              Giọng bạn thân gần gũi • Xưng hô t - mấy bà / mn • Khen thật Chê thẳng
+              Giọng bạn thân gần gũi • Xưng hô t - mấy bà / mn • Link Shopee Mall chính hãng 100%
             </p>
           </div>
         </div>
@@ -114,7 +189,7 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
               id="tab-view-caption"
               onClick={() => setActiveTab("caption")}
               className={`px-3 py-1 rounded-lg transition-colors ${
-                activeTab === "caption" ? "bg-slate-800 text-pink-400 font-bold border border-slate-700" : "text-slate-400 hover:text-slate-200"
+                activeTab === "caption" ? "bg-slate-800 text-orange-400 font-bold border border-slate-700" : "text-slate-400 hover:text-slate-200"
               }`}
             >
               Caption TikTok / Shopee
@@ -123,7 +198,7 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
               id="tab-view-markdown"
               onClick={() => setActiveTab("markdown")}
               className={`px-3 py-1 rounded-lg transition-colors ${
-                activeTab === "markdown" ? "bg-slate-800 text-pink-400 font-bold border border-slate-700" : "text-slate-400 hover:text-slate-200"
+                activeTab === "markdown" ? "bg-slate-800 text-orange-400 font-bold border border-slate-700" : "text-slate-400 hover:text-slate-200"
               }`}
             >
               Kịch Bản Đầy Đủ (Markdown)
@@ -134,17 +209,17 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
           <button
             id="btn-copy-full-caption-header"
             onClick={() => triggerCopyFeedback("all-caption", fullCaptionContent)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white hover:opacity-95 active:scale-95 transition-all shadow-md shadow-pink-500/25"
-            title="Sao chép toàn bộ nội dung caption (Hook, Story, Link Affiliate, CTA, Hashtag)"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 text-white hover:opacity-95 active:scale-95 transition-all shadow-md shadow-orange-500/25"
+            title="Sao chép toàn bộ nội dung caption (Hook, Story, Link Shopee Mall, CTA, Hashtag)"
           >
             {copiedType === "all-caption" ? (
               <>
-                <CheckCircle2 className="w-4 h-4 text-white" />
+                <CheckCircleIcon className="w-4 h-4 text-white" />
                 <span>ĐÃ COPY TOÀN BỘ CAPTION!</span>
               </>
             ) : (
               <>
-                <Copy className="w-4 h-4" />
+                <CopyIcon className="w-4 h-4" />
                 <span>COPY TOÀN BỘ CAPTION</span>
               </>
             )}
@@ -152,36 +227,59 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
         </div>
       </div>
 
-      {/* Quick Paste Assistant Banner */}
-      <div className="px-4 py-2.5 bg-slate-950/80 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2 text-slate-300">
-          <Share2 className="w-3.5 h-3.5 text-pink-400" />
-          <span className="font-medium">Dán nhanh vào:</span>
-          <div className="flex items-center gap-1.5 font-mono text-[11px]">
-            <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-pink-300">TikTok Video/Photo</span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-orange-300">Shopee Feed</span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-blue-300">Facebook / Reels</span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-purple-300">Instagram / Threads</span>
-          </div>
+      {/* Shopee Smart Link Preset Bar */}
+      <div className="px-4 py-3 bg-slate-950/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2 text-slate-300 flex-wrap">
+          <span className="font-semibold text-orange-400 flex items-center gap-1.5 font-mono text-[11px]">
+            <SearchIcon className="w-3.5 h-3.5 text-orange-400" />
+            <span>Công cụ Link Shopee Nhanh:</span>
+          </span>
+          <button
+            id="btn-preset-shopee-mall"
+            onClick={handleApplyAllShopeeMall}
+            className="px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-300 hover:bg-orange-500/20 transition-all font-mono text-[11px] inline-flex items-center gap-1 font-bold shadow-xs"
+            title="Chuyển toàn bộ link sang tìm kiếm Shopee Mall chính hãng"
+          >
+            <BagIcon className="w-3 h-3 text-orange-400" />
+            <span>⚡ Link Shopee Mall Chính Hãng</span>
+          </button>
+          <button
+            id="btn-preset-shopee-sales"
+            onClick={handleApplyAllShopeeTopSales}
+            className="px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition-all font-mono text-[11px] inline-flex items-center gap-1"
+            title="Chuyển sang link tìm kiếm Top Bán Chạy / Deal Hot"
+          >
+            <FlameIcon className="w-3 h-3 text-rose-400" />
+            <span>🔥 Link Shopee Bán Chạy</span>
+          </button>
+          <button
+            id="btn-preset-shopee-search"
+            onClick={handleApplyAllShopeeSearch}
+            className="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all font-mono text-[11px] inline-flex items-center gap-1"
+            title="Link tìm kiếm trực tiếp trên Shopee"
+          >
+            <SearchIcon className="w-3 h-3 text-slate-400" />
+            <span>🔍 Link Tìm Kiếm Chuẩn</span>
+          </button>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             id="btn-copy-only-links"
             onClick={copyOnlyLinks}
-            className="text-[11px] font-mono text-slate-400 hover:text-pink-400 inline-flex items-center gap-1 transition-colors px-2 py-1 rounded bg-slate-900 border border-slate-800"
-            title="Chỉ chép danh sách link Affiliate"
+            className="text-[11px] font-mono text-slate-400 hover:text-orange-400 inline-flex items-center gap-1 transition-colors px-2 py-1 rounded bg-slate-900 border border-slate-800"
+            title="Chỉ chép danh sách link Shopee"
           >
-            <LinkIcon className="w-3 h-3" />
+            <ChainIcon className="w-3 h-3" />
             <span>{copiedType === "links-only" ? "Đã chép link!" : "Chép Chỉ Link"}</span>
           </button>
           <button
             id="btn-copy-only-hashtags"
             onClick={copyOnlyHashtags}
-            className="text-[11px] font-mono text-slate-400 hover:text-pink-400 inline-flex items-center gap-1 transition-colors px-2 py-1 rounded bg-slate-900 border border-slate-800"
+            className="text-[11px] font-mono text-slate-400 hover:text-orange-400 inline-flex items-center gap-1 transition-colors px-2 py-1 rounded bg-slate-900 border border-slate-800"
             title="Chỉ chép bộ Hashtag viral"
           >
-            <Hash className="w-3 h-3" />
+            <HashIcon className="w-3 h-3" />
             <span>{copiedType === "hashtags-only" ? "Đã chép thẻ!" : "Chép Hashtags"}</span>
           </button>
         </div>
@@ -193,7 +291,7 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
           <div className="lg:col-span-7 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <span>Nội dung bài viết hoàn chỉnh:</span>
+                <span>Nội dung bài viết hoàn chỉnh (Kèm link Shopee Mall):</span>
                 <span className="text-[10px] text-slate-500 font-normal">
                   ({fullCaptionContent.length} ký tự)
                 </span>
@@ -202,9 +300,9 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
                 <button
                   id="btn-toggle-edit-caption-text"
                   onClick={() => setIsEditingCaption(!isEditingCaption)}
-                  className="text-xs text-pink-400 hover:text-pink-300 font-semibold inline-flex items-center gap-1"
+                  className="text-xs text-orange-400 hover:text-orange-300 font-semibold inline-flex items-center gap-1"
                 >
-                  <Edit2 className="w-3 h-3" />
+                  <EditIcon className="w-3 h-3" />
                   <span>{isEditingCaption ? "Xem định dạng" : "Chỉnh sửa tự do"}</span>
                 </button>
               </div>
@@ -217,16 +315,16 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
                   value={fullCaptionContent}
                   onChange={(e) => handleUpdateFullCaptionText(e.target.value)}
                   rows={14}
-                  className="w-full text-xs sm:text-sm font-mono p-4 rounded-xl border border-slate-700 bg-slate-950 text-slate-100 focus:outline-none focus:ring-1 focus:ring-pink-500 leading-relaxed shadow-inner"
+                  className="w-full text-xs sm:text-sm font-mono p-4 rounded-xl border border-slate-700 bg-slate-950 text-slate-100 focus:outline-none focus:ring-1 focus:ring-orange-500 leading-relaxed shadow-inner"
                   placeholder="Nhập nội dung caption..."
                 />
                 <div className="flex justify-end">
                   <button
                     id="btn-copy-edited-caption"
                     onClick={() => triggerCopyFeedback("all-caption", fullCaptionContent)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-pink-500 text-white hover:bg-pink-600 transition-colors shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-orange-500 text-white hover:bg-orange-600 transition-colors shadow-xs"
                   >
-                    <Copy className="w-3.5 h-3.5" />
+                    <CopyIcon className="w-3.5 h-3.5" />
                     <span>Copy Toàn Bộ Caption Đã Sửa</span>
                   </button>
                 </div>
@@ -237,17 +335,17 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
                 <button
                   id="btn-copy-preview-float"
                   onClick={() => triggerCopyFeedback("all-caption", fullCaptionContent)}
-                  className="absolute top-3 right-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800/90 hover:bg-pink-500 text-slate-200 hover:text-white border border-slate-700 transition-all shadow-md backdrop-blur-xs"
+                  className="absolute top-3 right-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800/90 hover:bg-orange-500 text-slate-200 hover:text-white border border-slate-700 transition-all shadow-md backdrop-blur-xs"
                   title="Sao chép toàn bộ caption"
                 >
                   {copiedType === "all-caption" ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <CheckIcon className="w-3.5 h-3.5 text-emerald-400" />
                       <span>Đã Copy!</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5" />
+                      <CopyIcon className="w-3.5 h-3.5" />
                       <span>Copy Toàn Bộ Caption</span>
                     </>
                   )}
@@ -263,33 +361,59 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
                   {caption.intro}
                 </p>
 
-                {/* Affiliate Links Block */}
-                <div className="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2">
-                  <div className="text-[11px] font-bold text-pink-400 uppercase tracking-wider font-mono">
-                    🔗 Link Mua Hàng Chính Hãng Đã Check Deal:
-                  </div>
-                  {caption.productLinks?.map((item, idx) => (
-                    <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs py-1 border-b border-slate-800/60 last:border-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-emerald-400">🌱</span>
-                        <strong className="text-slate-100">{item.name}</strong>
-                        {item.note && (
-                          <span className="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">
-                            {item.note}
-                          </span>
-                        )}
-                      </div>
-                      <a
-                        href={item.defaultUrl}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="text-blue-400 underline hover:text-blue-300 truncate max-w-[220px] inline-flex items-center gap-1 text-[11px]"
-                      >
-                        <span>{item.defaultUrl}</span>
-                        <ExternalLink className="w-2.5 h-2.5" />
-                      </a>
+                {/* Affiliate Links Block with Shopee Badges */}
+                <div className="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] font-bold text-orange-400 uppercase tracking-wider font-mono flex items-center gap-1.5">
+                      <BagIcon className="w-3.5 h-3.5 text-orange-400" />
+                      <span>Link Mua Hàng Shopee Mall Chính Hãng Đã Check Deal:</span>
                     </div>
-                  ))}
+                  </div>
+
+                  {caption.productLinks?.map((item, idx) => {
+                    const searchUrl = item.defaultUrl || item.shopeeSearchUrl || `https://shopee.vn/search?keyword=${encodeURIComponent(item.name + " chính hãng")}`;
+                    return (
+                      <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs py-1.5 border-b border-slate-800/60 last:border-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-emerald-400 font-bold">🌱</span>
+                          <strong className="text-slate-100">{item.name}</strong>
+                          {item.verdict && (
+                            <span className="text-[10px] text-pink-300 bg-pink-500/10 border border-pink-500/20 px-1.5 py-0.2 rounded font-bold">
+                              {item.verdict}
+                            </span>
+                          )}
+                          {item.note && (
+                            <span className="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.2 rounded border border-slate-700">
+                              {item.note}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <a
+                            href={searchUrl}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="text-orange-400 underline hover:text-orange-300 truncate max-w-[200px] inline-flex items-center gap-1 text-[11px] font-mono"
+                            title="Bấm để mở và kiểm tra deal thật trên Shopee"
+                          >
+                            <span>{searchUrl}</span>
+                            <ExtIcon className="w-2.5 h-2.5 shrink-0" />
+                          </a>
+                          <a
+                            href={searchUrl}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="px-2 py-0.5 rounded-md bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 border border-orange-500/30 text-[10px] font-bold inline-flex items-center gap-1 transition-colors"
+                            title="Mở tìm kiếm Shopee trong tab mới để check deal & mã giảm giá"
+                          >
+                            <BagIcon className="w-2.5 h-2.5" />
+                            <span>Mở Shopee</span>
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* CTA */}
@@ -300,7 +424,7 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
                 {/* Hashtags */}
                 <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-800 text-slate-500 font-mono text-[11px]">
                   {caption.hashtags?.map((tag, idx) => (
-                    <span key={idx} className="text-slate-400 hover:text-pink-400 transition-colors">
+                    <span key={idx} className="text-slate-400 hover:text-orange-400 transition-colors">
                       {tag}
                     </span>
                   ))}
@@ -308,15 +432,16 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
 
                 {/* Big Bottom Action Bar inside Card */}
                 <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-400">
-                    💡 Bấm nút để sao chép chuẩn không lỗi font khi đăng bài.
+                  <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                    <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Link chuẩn Shopee Mall, không lỗi font khi đăng bài TikTok / Shopee.</span>
                   </span>
                   <button
                     id="btn-copy-full-caption-card-bottom"
                     onClick={() => triggerCopyFeedback("all-caption", fullCaptionContent)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-pink-500/20 text-pink-300 border border-pink-500/40 hover:bg-pink-500 hover:text-white transition-all shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-orange-500/20 text-orange-300 border border-orange-500/40 hover:bg-orange-500 hover:text-white transition-all shadow-xs"
                   >
-                    <Copy className="w-3.5 h-3.5" />
+                    <CopyIcon className="w-3.5 h-3.5" />
                     <span>Copy Toàn Bộ Caption</span>
                   </button>
                 </div>
@@ -324,60 +449,121 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
             )}
           </div>
 
-          {/* Right Column: Link Manager & Gen Z Slang Toolkit */}
+          {/* Right Column: Shopee Link Manager & Customizer */}
           <div className="lg:col-span-5 space-y-4">
             <div className="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-3">
-              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-                <span>Quản Lý Link Affiliate ({caption.productLinks?.length || 0} món)</span>
-                <span className="text-[10px] text-pink-400 font-bold bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/20">
-                  Shopee / TikTok
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <BagIcon className="w-3.5 h-3.5 text-orange-400" />
+                  <span>Quản Lý Link Shopee ({caption.productLinks?.length || 0} món)</span>
+                </h4>
+                <span className="text-[10px] text-orange-400 font-bold bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20">
+                  Shopee Mall & Deal
                 </span>
-              </h4>
+              </div>
 
-              <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
-                {caption.productLinks?.map((link, idx) => (
-                  <div key={idx} className="p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-200 truncate">
-                        {idx + 1}. {link.name}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => triggerCopyFeedback(`link-${idx}`, link.defaultUrl)}
-                        className="text-[11px] font-mono text-pink-400 hover:text-pink-300 font-semibold"
-                      >
-                        {copiedType === `link-${idx}` ? "Đã chép" : "Chép link"}
-                      </button>
+              {/* Custom Affiliate Tag Input */}
+              <div className="p-2.5 bg-slate-900/90 rounded-xl border border-slate-800 space-y-1.5">
+                <label className="text-[11px] font-semibold text-slate-300 block">
+                  Đổi nhanh mã rút gọn Shopee Affiliate (s.shopee.vn):
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={customTagInput}
+                    onChange={(e) => setCustomTagInput(e.target.value)}
+                    placeholder="Ví dụ: hang_chinh_hang hoặc deal_hot"
+                    className="w-full text-xs font-mono px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-950 text-slate-100 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCustomShortlinkTag}
+                    className="px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shrink-0 transition-colors"
+                  >
+                    Áp Dụng
+                  </button>
+                </div>
+              </div>
+
+              {/* Per-Product Link Items */}
+              <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                {caption.productLinks?.map((link, idx) => {
+                  const cleanName = link.name.replace(/\(.*?\)/g, "").trim();
+                  const mallUrl = link.mallSearchUrl || `https://shopee.vn/search?keyword=${encodeURIComponent(cleanName + " chính hãng")}&facet=11035987`;
+                  const searchUrl = link.shopeeSearchUrl || `https://shopee.vn/search?keyword=${encodeURIComponent(cleanName + " chính hãng")}`;
+
+                  return (
+                    <div key={idx} className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 truncate flex items-center gap-1">
+                          <span className="text-orange-400">#{idx + 1}</span>
+                          <span>{link.name}</span>
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={link.defaultUrl || searchUrl}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="text-[11px] text-orange-400 hover:underline inline-flex items-center gap-0.5"
+                            title="Mở kiểm tra trên Shopee"
+                          >
+                            <span>Mở Shopee</span>
+                            <ExtIcon className="w-2.5 h-2.5" />
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => triggerCopyFeedback(`link-${idx}`, link.defaultUrl)}
+                            className="text-[11px] font-mono text-pink-400 hover:text-pink-300 font-semibold"
+                          >
+                            {copiedType === `link-${idx}` ? "Đã chép" : "Chép"}
+                          </button>
+                        </div>
+                      </div>
+
+                      <input
+                        type="text"
+                        value={link.defaultUrl}
+                        onChange={(e) => handleUpdateLinkUrl(idx, e.target.value)}
+                        placeholder="https://shopee.vn/search?keyword=..."
+                        className="w-full text-xs font-mono px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-950 text-slate-100 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                      />
+
+                      {/* Fast Action Buttons for each product */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateLinkUrl(idx, mallUrl)}
+                          className="px-2 py-0.5 rounded bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 border border-orange-500/20 text-[10px] font-mono"
+                          title="Đặt link Shopee Mall chính hãng"
+                        >
+                          ⚡ Gán Mall
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateLinkUrl(idx, searchUrl)}
+                          className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[10px] font-mono"
+                          title="Đặt link tìm kiếm thông thường"
+                        >
+                          🔍 Gán Tìm Kiếm
+                        </button>
+                      </div>
                     </div>
-
-                    <input
-                      type="text"
-                      value={link.defaultUrl}
-                      onChange={(e) => handleUpdateLinkUrl(idx, e.target.value)}
-                      placeholder="https://s.shopee.vn/..."
-                      className="w-full text-xs font-mono px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-950 text-slate-100 focus:outline-none focus:ring-1 focus:ring-pink-500"
-                    />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
-            {/* Quick Gen Z Slang Tips */}
+            {/* Quick Gen Z Slang & Deal Checking Tips */}
             <div className="p-4 bg-gradient-to-b from-slate-900 to-slate-950 rounded-2xl border border-slate-800 space-y-2.5 text-xs text-slate-300">
-              <div className="flex items-center gap-1.5 font-bold text-pink-400">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Gen Z Tone: Khen thật - Chê thẳng</span>
+              <div className="flex items-center gap-1.5 font-bold text-orange-400">
+                <SparkleIcon className="w-3.5 h-3.5" />
+                <span>Mẹo Gắn Link Shopee Tăng Tỷ Lệ Mua Hàng (CTR)</span>
               </div>
-              <div className="flex flex-wrap gap-1 text-[11px]">
-                {["chân ái", "trộm vía", "bth", "bao trắng", "dính đòn", "mê xỉu", "pick liền", "tiền mất tật mang"].map((word, i) => (
-                  <span key={i} className="px-2 py-0.5 rounded-lg bg-slate-800 border border-slate-700 font-mono text-slate-300">
-                    {word}
-                  </span>
-                ))}
-              </div>
-              <p className="text-[11px] text-slate-400 italic leading-relaxed">
-                "Xưng hô: t - mấy bà / mn. Nhắc nhở check link Bio / cmt để nhận ưu đãi chuẩn sàn."
-              </p>
+              <ul className="space-y-1 text-[11px] text-slate-400 list-disc list-inside leading-relaxed">
+                <li>Luôn dẫn link có từ khóa <strong>"chính hãng"</strong> hoặc <strong>Shopee Mall</strong> để tạo uy tín tuyệt đối cho người xem.</li>
+                <li>Nhắc người xem: <em>"Check cmt / link bio để nhận voucher giảm 30-50k và freeship extra nha mấy bà!"</em></li>
+                <li>Xưng hô tự nhiên: <em>t - mấy bà / mn</em> để giữ trọn vẹn tone bạn thân.</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -395,12 +581,12 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
             >
               {copiedType === "markdown" ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <CheckIcon className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Đã sao chép toàn bộ!</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-3.5 h-3.5" />
+                  <CopyIcon className="w-3.5 h-3.5" />
                   <span>Sao Chép Tất Cả Kịch Bản</span>
                 </>
               )}

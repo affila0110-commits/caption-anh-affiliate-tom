@@ -38,6 +38,9 @@ export interface AffiliateProductLink {
   name: string;
   verdict?: string;
   defaultUrl: string;
+  shopeeSearchUrl?: string;
+  mallSearchUrl?: string;
+  topSalesSearchUrl?: string;
   note?: string;
 }
 
