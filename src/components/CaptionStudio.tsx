@@ -334,47 +334,109 @@ export const CaptionStudio: React.FC<CaptionStudioProps> = ({
                   </span>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {caption.productLinks?.map((item, idx) => {
-                    const searchUrl = item.defaultUrl || item.shopeeSearchUrl || `https://shopee.vn/search?keyword=${encodeURIComponent(item.name + " chính hãng")}`;
+                    const cleanName = item.name.replace(/\(.*?\)/g, "").trim();
+                    const searchUrl = item.defaultUrl || item.mallSearchUrl || item.shopeeSearchUrl || `https://shopee.vn/search?keyword=${encodeURIComponent(cleanName + " chính hãng")}&facet=11035987`;
+                    const mallUrl = item.mallSearchUrl || `https://shopee.vn/search?keyword=${encodeURIComponent(cleanName)}&facet=11035987`;
+                    const topSalesUrl = item.topSalesSearchUrl || `https://shopee.vn/search?keyword=${encodeURIComponent(cleanName)}&sortBy=sales`;
+                    const tiktokUrl = item.tiktokSearchUrl || `https://www.tiktok.com/search?q=${encodeURIComponent(cleanName + " review")}`;
+                    const facebookUrl = item.facebookSearchUrl || `https://www.facebook.com/search/posts?q=${encodeURIComponent(cleanName + " review")}`;
+
                     return (
-                      <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs py-2 border-b border-slate-800/60 last:border-0 hover:bg-slate-800/30 px-2 rounded-lg transition-colors">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-emerald-400 font-bold">🌱</span>
-                          <strong className="text-slate-100">{item.name}</strong>
-                          {item.verdict && (
-                            <span className="text-[10px] text-pink-300 bg-pink-500/10 border border-pink-500/20 px-2 py-0.5 rounded font-bold">
-                              {item.verdict}
-                            </span>
-                          )}
-                          {item.note && (
-                            <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
-                              {item.note}
-                            </span>
-                          )}
+                      <div key={idx} className="flex flex-col gap-2 p-3 bg-slate-950/80 rounded-xl border border-slate-800/80 hover:border-orange-500/30 transition-all">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-emerald-400 font-bold">🌱</span>
+                            <strong className="text-slate-100 text-xs sm:text-sm">{item.name}</strong>
+                            {item.verdict && (
+                              <span className="text-[10px] text-pink-300 bg-pink-500/10 border border-pink-500/20 px-2 py-0.5 rounded font-bold font-mono">
+                                {item.verdict}
+                              </span>
+                            )}
+                            {item.soldCount && (
+                              <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded font-mono font-bold">
+                                🔥 {item.soldCount}
+                              </span>
+                            )}
+                            {item.ratingScore && (
+                              <span className="text-[10px] text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded font-mono font-bold">
+                                ⭐ {item.ratingScore}★
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="text-[11px] text-slate-400 font-mono">
+                            {item.priceEstimate || item.note || "Shopee Mall chính hãng"}
+                          </div>
                         </div>
 
-                        <div className="flex items-center gap-2.5 shrink-0">
+                        {/* Direct Multi-Platform Action Buttons */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/60">
                           <a
                             href={searchUrl}
                             target="_blank"
                             rel="noreferrer noopener"
-                            className="text-orange-400 underline hover:text-orange-300 truncate max-w-[280px] inline-flex items-center gap-1 text-[11px] font-mono"
-                            title="Bấm để mở và kiểm tra deal thật trên Shopee"
+                            className="text-orange-400 underline hover:text-orange-300 truncate max-w-[240px] sm:max-w-[320px] inline-flex items-center gap-1 text-[11px] font-mono"
+                            title="Link gắn vào caption hoặc bio"
                           >
                             <span>{searchUrl}</span>
                             <ExtIcon className="w-2.5 h-2.5 shrink-0" />
                           </a>
-                          <a
-                            href={searchUrl}
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            className="px-2.5 py-1 rounded-md bg-orange-500/15 hover:bg-orange-500 text-orange-300 hover:text-white border border-orange-500/30 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer"
-                            title="Mở tìm kiếm Shopee trong tab mới để check deal & mã giảm giá"
-                          >
-                            <BagIcon className="w-3 h-3" />
-                            <span>Mở Shopee</span>
-                          </a>
+
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {/* Shopee Mall */}
+                            <a
+                              href={mallUrl}
+                              target="_blank"
+                              rel="noreferrer noopener"
+                              className="px-2.5 py-1 rounded-lg bg-orange-500/15 hover:bg-orange-500 text-orange-300 hover:text-white border border-orange-500/30 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs"
+                              title="Mở gian hàng Shopee Mall chính hãng"
+                            >
+                              <BagIcon className="w-3 h-3" />
+                              <span>Shopee Mall</span>
+                              <ExtIcon className="w-2 h-2 opacity-70" />
+                            </a>
+
+                            {/* Top Bán Chạy */}
+                            <a
+                              href={topSalesUrl}
+                              target="_blank"
+                              rel="noreferrer noopener"
+                              className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/30 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs"
+                              title="Xem các shop có lượt bán chạy nhất trên Shopee"
+                            >
+                              <FlameIcon className="w-3 h-3" />
+                              <span>Top Bán Chạy</span>
+                              <ExtIcon className="w-2 h-2 opacity-70" />
+                            </a>
+
+                            {/* TikTok Review */}
+                            <a
+                              href={tiktokUrl}
+                              target="_blank"
+                              rel="noreferrer noopener"
+                              className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-cyan-300 hover:text-cyan-200 border border-slate-700 text-[11px] font-bold inline-flex items-center gap-1 transition-all"
+                              title="Xem video review triệu view & giỏ hàng trên TikTok"
+                            >
+                              <span className="text-[10px]">🎵</span>
+                              <span>TikTok</span>
+                              <ExtIcon className="w-2 h-2 opacity-70" />
+                            </a>
+
+                            {/* Facebook Review */}
+                            <a
+                              href={facebookUrl}
+                              target="_blank"
+                              rel="noreferrer noopener"
+                              className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-blue-300 hover:text-blue-200 border border-slate-700 text-[11px] font-bold inline-flex items-center gap-1 transition-all"
+                              title="Xem thảo luận trên Facebook"
+                            >
+                              <span className="text-[10px]">💬</span>
+                              <span>Facebook</span>
+                              <ExtIcon className="w-2 h-2 opacity-70" />
+                            </a>
+                          </div>
                         </div>
                       </div>
                     );

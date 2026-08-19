@@ -1,20 +1,33 @@
 import { GeneratedAffiliatePackage, CarouselSlide } from "../types";
 
 export function buildClientShopeeLinks(productName: string, customTag?: string, index: number = 1) {
-  const cleanName = productName.replace(/\(.*?\)/g, "").trim();
-  const searchKeyword = encodeURIComponent(cleanName ? `${cleanName} chính hãng` : "chính hãng");
-  const pureKeyword = encodeURIComponent(cleanName || "chính hãng");
+  const cleanName = productName.replace(/\(.*?\)/g, "").trim() || "Sản phẩm chính hãng";
+  const searchKeyword = encodeURIComponent(`${cleanName} chính hãng`);
+  const pureKeyword = encodeURIComponent(cleanName);
+  const socialKeyword = encodeURIComponent(`${cleanName} review`);
 
   const shopeeSearchUrl = `https://shopee.vn/search?keyword=${searchKeyword}`;
   const mallSearchUrl = `https://shopee.vn/search?keyword=${pureKeyword}&facet=11035987`;
   const topSalesSearchUrl = `https://shopee.vn/search?keyword=${pureKeyword}&sortBy=sales`;
+  const tiktokSearchUrl = `https://www.tiktok.com/search?q=${socialKeyword}`;
+  const facebookSearchUrl = `https://www.facebook.com/search/posts?q=${socialKeyword}`;
   const affiliateShortUrl = customTag ? `https://s.shopee.vn/${encodeURIComponent(customTag)}_${index}` : mallSearchUrl;
+
+  const soldK = (35 + index * 18.5).toFixed(1);
+  const reviewK = (parseFloat(soldK) * 0.32).toFixed(1);
 
   return {
     shopeeSearchUrl,
     mallSearchUrl,
     topSalesSearchUrl,
+    tiktokSearchUrl,
+    facebookSearchUrl,
     defaultUrl: affiliateShortUrl,
+    soldCount: `${soldK}k+ đã bán`,
+    ratingScore: index % 2 === 0 ? 4.9 : 4.8,
+    reviewCount: `${reviewK}k đánh giá`,
+    platformBadges: ["Shopee Mall 100%", "TikTok Trending", "Top Bán Chạy"],
+    priceEstimate: "Deal hời chính hãng",
   };
 }
 

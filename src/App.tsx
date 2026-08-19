@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Header } from "./components/Header";
 import { CommandBar } from "./components/CommandBar";
+import { NicheExplorer } from "./components/NicheExplorer";
 import { CarouselStudio } from "./components/CarouselStudio";
 import { CaptionStudio } from "./components/CaptionStudio";
 import { NghéContentHandbook } from "./components/NghéContentHandbook";
@@ -254,6 +255,18 @@ export default function App() {
             onUpdateCaption={handleUpdateCaption}
           />
         )}
+
+        {/* Section 3: Kho Sản Phẩm Chọn Lọc & Biểu Đồ Xu Hướng (Shopee • TikTok • Facebook) */}
+        <NicheExplorer
+          onSelectProductForReview={(name, cmd) => {
+            handleGenerate(`${cmd} ${name}`, "");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          onSelectDirectPrompt={(prompt) => {
+            handleGenerate(prompt, "");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
       </main>
 
       {/* Footer */}

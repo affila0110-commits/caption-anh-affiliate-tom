@@ -41,6 +41,14 @@ export interface AffiliateProductLink {
   shopeeSearchUrl?: string;
   mallSearchUrl?: string;
   topSalesSearchUrl?: string;
+  tiktokSearchUrl?: string;
+  facebookSearchUrl?: string;
+  soldCount?: string; // e.g. "68.5k+ đã bán"
+  ratingScore?: number; // e.g. 4.9
+  reviewCount?: string; // e.g. "18.2k đánh giá"
+  platformBadges?: string[]; // e.g. ["Shopee Mall", "TikTok Trending", "Top 1 Bán Chạy"]
+  priceEstimate?: string; // e.g. "320k - 380k"
+  niche?: string; // e.g. "Mỹ Phẩm & Skincare"
   note?: string;
 }
 
